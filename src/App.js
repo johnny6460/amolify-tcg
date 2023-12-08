@@ -21,6 +21,7 @@ import { Amplify } from 'aws-amplify';
 import { generateClient } from "aws-amplify/api";
 import gql from 'graphql-tag';
 import { format } from 'date-fns';
+import { useState, useEffect  } from "react";
 
 import SendIcon from '@mui/icons-material/Send';
 
@@ -48,17 +49,22 @@ Amplify.configure({
   aws_appsync_apiKey: "null"
 })
 
+const client = generateClient();
 
+const App = () => {
+  
+  const id = "pokeca";
+  
   //state初期化
   const [message, setMessage] = useState("");
-  const [gamedata, setGamedata] = useState();
+  const [Gamedata, setGame] = useState();
   
   //メッセージ取得クエリー
   //queryGamedataByid リゾルバを呼び出します。引数として id を渡します。
   //レスポンスに欲しいアイテムを、items 以下に記述します。
   const queryGetGame = gql`
     query queryGamedataByid($id: String!) {
-      queryGamedataByid(id: "") {
+      queryGamedataByid(id: $id) {
         items {
           id
           timestamp
@@ -78,11 +84,11 @@ Amplify.configure({
       query: queryGetGame,
       variables: {
         id: id
-      }
+      },
     });
     
        //レスポンスを res 定数で受け取ると、以下に表現した階層構造でデータを受け取れます。
-    setGamedata(res.data.queryGamedataByid.items);
+    setGame(res.data.queryGamedataByid.items);
   };
     
       //対戦データ登録クエリー
@@ -98,14 +104,14 @@ Amplify.configure({
       $oppdeck: String!,
       $memo: String
     ) {
-      putGamedata(input: {
+      putGame(input: {
         id: $id,
         timestamp: $timestamp,
         winner: $winner,
         first: $first,
-        mydeck: $String!,
-        oppdeck: $String!,
-        memo: $String
+        mydeck: $mydeck!,
+        oppdeck: $oppdeck!,
+        memo: $memo
       }) {
         id
       }
@@ -120,19 +126,21 @@ Amplify.configure({
       query: queryPutGame,
       variables: {
         id: id,
-        timestamp: timestamp,
-        winner: winner,
-        first: first,
-        mydeck: mydeck,
-        oppdeck: oppdeck,
-        memo: memo
+        //timestamp: timestamp,
+        //winner: winner,
+        //first: first,
+        //mydeck: mydeck,
+        //oppdeck: oppdeck,
+        //memo: memo
       },
     });
     //メッセージ入力欄クリア
-    setMessage("");
+    setGame("");
   };
 
 
+
+/*
   //コンポーネント表示時に実行
   useEffect(() => {
     //メッセージ取得　画面表示時点のメッセージデータを取得します。
@@ -140,9 +148,11 @@ Amplify.configure({
     //サブスクリプション実行　これにより、DynamoDB テーブルへのデータ書込のプッシュ通知を受けられる状態にします。
     subscribePutGame();
   }, []);
+ */
 
 
-const App = () => {
+
+
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
     <Grid container spacing={2}>
@@ -157,7 +167,7 @@ const App = () => {
         
         <FormControl>
              <FormLabel id="winner">勝敗</FormLabel>
-             onChange={e => setGameData({ ...formData, 'id': e.target.value})}
+             onChange={e => setGame({ ...Gamedata, 'id': e.target.value})}
               <RadioGroup
                aria-labelledby="id"
                defaultValue="pokeca"
@@ -168,7 +178,7 @@ const App = () => {
            </FormControl>
         
         <TextField
-        onChange={e => setGameData({ ...formData, 'timestamp': e.target.value})}
+        onChange={e => setGame({ ...Gamedata, 'timestamp': e.target.value})}
         fullWidth
         required
         label="日付"
@@ -184,7 +194,7 @@ const App = () => {
            <Grid item xs={6}>
             <FormControl>
              <FormLabel id="winner">勝敗</FormLabel>
-             onChange={e => setGameData({ ...formData, 'winner': e.target.value})}
+             onChange={e => setGame({ ...Gamedata, 'winner': e.target.value})}
               <RadioGroup
                aria-labelledby="winner"
                defaultValue="win"
@@ -199,7 +209,7 @@ const App = () => {
            <Grid item xs={6}>
            <FormControl>
             <FormLabel id="first">先後</FormLabel>
-            onChange={e => setGameData({ ...formData, 'first': e.target.value})}
+            onChange={e => setGame({ ...Gamedata, 'first': e.target.value})}
              <RadioGroup
               aria-labelledby="first"
               defaultValue="first"
@@ -213,7 +223,7 @@ const App = () => {
          </Grid>
 
           <TextField
-            onChange={e => setGameData({ ...formData, 'mydeck': e.target.value})}
+            onChange={e => setGame({ ...Gamedata, 'mydeck': e.target.value})}
             margin="normal"
             required
             fullWidth
@@ -223,7 +233,7 @@ const App = () => {
           />
 
           <TextField
-            onChange={e => setGameData({ ...formData, 'oppdeck': e.target.value})}
+            onChange={e => setGame({ ...Gamedata, 'oppdeck': e.target.value})}
             margin="normal"
             required
             fullWidth
@@ -233,7 +243,7 @@ const App = () => {
           />
           
          <TextField
-            onChange={e => setGameData({ ...formData, 'memo': e.target.value})}
+            onChange={e => setGame({ ...Gamedata, 'memo': e.target.value})}
             margin="normal"
             fullWidth
             label="メモ"
@@ -260,7 +270,7 @@ const App = () => {
         <Grid container spacing={2}>
         {/* Gamedata */}
         <Grid item xs={12} md={6} lg={12}>
-          {gamedata?.map((row) => (
+          {Gamedata?.map((row) => (
             <React.Fragment>
               <Stack direction="row" justifyContent="flex-start" alignItems="flex-start" spacing={1}>
                 <Typography variant="caption" component="span" color="text.secondary">{format(Date.parse(row.timestamp),"yyyy-MM-dd")}</Typography>
