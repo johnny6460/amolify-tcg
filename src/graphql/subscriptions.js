@@ -4,24 +4,24 @@
 export const onCreateTodo = /* GraphQL */ `
   subscription OnCreateTodo($filter: ModelSubscriptionTodoFilterInput) {
     onCreateTodo(filter: $filter) {
-      id
-      name
-      description
-      createdAt
-      updatedAt
-      __typename
+      timestamp
+      winner
+      first
+      mydeck
+      oppdeck
+      memo
     }
   }
 `;
 export const onUpdateTodo = /* GraphQL */ `
   subscription OnUpdateTodo($filter: ModelSubscriptionTodoFilterInput) {
     onUpdateTodo(filter: $filter) {
-      id
-      name
-      description
-      createdAt
-      updatedAt
-      __typename
+      timestamp
+      winner
+      first
+      mydeck
+      oppdeck
+      memo
     }
   }
 `;
@@ -33,7 +33,6 @@ export const onDeleteTodo = /* GraphQL */ `
       description
       createdAt
       updatedAt
-      __typename
     }
   }
 `;

@@ -1,35 +1,18 @@
-/* eslint-disable */
-// this is an auto generated file. This will be overwritten
-
-export const getTodo = /* GraphQL */ `
-  query GetTodo($id: ID!) {
-    getTodo(id: $id) {
-      id
-      name
-      description
-      createdAt
-      updatedAt
-      __typename
+{
+  "version": "2018-05-29",
+  "operation": "Query",
+  "query": {
+    "expression": "#id = :id",
+    "expressionNames": {
+      "#id": "id"
+    },
+    "expressionValues": {
+      ":id": $util.dynamodb.toDynamoDBJson($context.arguments.id)
     }
-  }
-`;
-export const listTodos = /* GraphQL */ `
-  query ListTodos(
-    $filter: ModelTodoFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listTodos(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        name
-        description
-        createdAt
-        updatedAt
-        __typename
-      }
-      nextToken
-      __typename
-    }
-  }
-`;
+  },
+  "limit": $util.defaultIfNull($context.arguments.first, 30),
+  "nextToken": $util.toJson($util.defaultIfNullOrEmpty($context.arguments.after, null)),
+  "scanIndexForward": false,
+  "consistentRead": false,
+  "select": "ALL_ATTRIBUTES"
+}
