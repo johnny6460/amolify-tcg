@@ -18,7 +18,7 @@ import {
 } from "@mui/base";
 
 import { Amplify } from 'aws-amplify';
-import { API } from 'aws-amplify';
+import { generateClient } from "aws-amplify/api";
 import gql from 'graphql-tag';
 import { format } from 'date-fns';
 
@@ -74,7 +74,7 @@ Amplify.configure({
   //対戦データ取得関数
   //上に定義したクエリーを AWS AppSync に投げます。
   const getGame = async () => {
-    const res = await API.graphql({
+    const res = await client.graphql({
       query: queryGetGame,
       variables: {
         id: id
@@ -116,7 +116,7 @@ Amplify.configure({
       //対戦データ登録関数
   //上に定義したクエリーを AWS AppSync に投げます。
   const putGame = async () => {
-    await API.graphql({
+    await client.graphql({
       query: queryPutGame,
       variables: {
         id: id,
