@@ -52,12 +52,20 @@ Amplify.configure({
 const client = generateClient();
 
 const App = () => {
-  
-  const id = "pokeca";
+       
+  const initialFormState = { 
+          id: 'pokeca',
+          timestamp: '',
+          winner: '',
+          first: '',
+          mydeck: '',
+          oppdeck: '',
+          memo: '' 
+          }
   
   //state初期化
   const [message, setMessage] = useState("");
-  const [Gamedata, setGame] = useState();
+  const [gamedata, setGame] = useState(initialFormState);
   
   //メッセージ取得クエリー
   //queryGamedataByid リゾルバを呼び出します。引数として id を渡します。
@@ -83,7 +91,7 @@ const App = () => {
     const res = await client.graphql({
       query: queryGetGame,
       variables: {
-        id: id
+        id: gamedata.id
       },
     });
     
@@ -104,7 +112,7 @@ const App = () => {
       $oppdeck: String!,
       $memo: String
     ) {
-      putGame(input: {
+      putGamedata(input: {
         id: $id,
         timestamp: $timestamp,
         winner: $winner,
@@ -124,14 +132,14 @@ const App = () => {
   const putGame = async () => {
     await client.graphql({
       query: queryPutGame,
-      variables: {
-        id: id,
-        //timestamp: timestamp,
-        //winner: winner,
-        //first: first,
-        //mydeck: mydeck,
-        //oppdeck: oppdeck,
-        //memo: memo
+      variables: { 
+        id: gamedata.id,
+        timestamp: gamedata.timestamp,
+        winner: gamedata.winner,
+        first: gamedata.first,
+        mydeck: gamedata.mydeck,
+        oppdeck: gamedata.oppdeck,
+        memo: gamedata.memo
       },
     });
     //メッセージ入力欄クリア
@@ -167,7 +175,7 @@ const App = () => {
         
         <FormControl>
              <FormLabel id="winner">勝敗</FormLabel>
-             onChange={e => setGame({ ...Gamedata, 'id': e.target.value})}
+             onChange={e => setGame({ ...gamedata, 'id': e.target.value})}
               <RadioGroup
                aria-labelledby="id"
                defaultValue="pokeca"
@@ -178,7 +186,7 @@ const App = () => {
            </FormControl>
         
         <TextField
-        onChange={e => setGame({ ...Gamedata, 'timestamp': e.target.value})}
+        onChange={e => setGame({ ...gamedata, 'timestamp': e.target.value})}
         fullWidth
         required
         label="日付"
@@ -194,7 +202,7 @@ const App = () => {
            <Grid item xs={6}>
             <FormControl>
              <FormLabel id="winner">勝敗</FormLabel>
-             onChange={e => setGame({ ...Gamedata, 'winner': e.target.value})}
+             onChange={e => setGame({ ...gamedata, 'winner': e.target.value})}
               <RadioGroup
                aria-labelledby="winner"
                defaultValue="win"
@@ -209,7 +217,7 @@ const App = () => {
            <Grid item xs={6}>
            <FormControl>
             <FormLabel id="first">先後</FormLabel>
-            onChange={e => setGame({ ...Gamedata, 'first': e.target.value})}
+            onChange={e => setGame({ ...gamedata, 'first': e.target.value})}
              <RadioGroup
               aria-labelledby="first"
               defaultValue="first"
@@ -223,7 +231,7 @@ const App = () => {
          </Grid>
 
           <TextField
-            onChange={e => setGame({ ...Gamedata, 'mydeck': e.target.value})}
+            onChange={e => setGame({ ...gamedata, 'mydeck': e.target.value})}
             margin="normal"
             required
             fullWidth
@@ -233,7 +241,7 @@ const App = () => {
           />
 
           <TextField
-            onChange={e => setGame({ ...Gamedata, 'oppdeck': e.target.value})}
+            onChange={e => setGame({ ...gamedata, 'oppdeck': e.target.value})}
             margin="normal"
             required
             fullWidth
@@ -243,7 +251,7 @@ const App = () => {
           />
           
          <TextField
-            onChange={e => setGame({ ...Gamedata, 'memo': e.target.value})}
+            onChange={e => setGame({ ...gamedata, 'memo': e.target.value})}
             margin="normal"
             fullWidth
             label="メモ"
@@ -270,15 +278,15 @@ const App = () => {
         <Grid container spacing={2}>
         {/* Gamedata */}
         <Grid item xs={12} md={6} lg={12}>
-          {Gamedata?.map((row) => (
+          {gamedata?.map((row) => (
             <React.Fragment>
               <Stack direction="row" justifyContent="flex-start" alignItems="flex-start" spacing={1}>
-                <Typography variant="caption" component="span" color="text.secondary">{format(Date.parse(row.timestamp),"yyyy-MM-dd")}</Typography>
+                //<Typography variant="caption" component="span" color="text.secondary">{format(Date.parse(row.timestamp),"yyyy-MM-dd")}</Typography>
               </Stack>
-              <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.mydeck}</Typography>
-               <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.oppdeck}</Typography>
-                <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.first}</Typography>
-                 <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.winner}</Typography>
+                  <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.mydeck}</Typography>
+                  <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.oppdeck}</Typography>
+                  <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.first}</Typography>
+                  <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.winner}</Typography>
                   <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.memo}</Typography>
               <Divider sx={{my:1}} />
             </React.Fragment>
