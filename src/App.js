@@ -96,7 +96,7 @@ Amplify.configure({
       $first: String!,
       $mydeck: String!,
       $oppdeck: String!,
-      $memo: String!
+      $memo: String
     ) {
       putGamedata(input: {
         id: $id,
@@ -105,7 +105,7 @@ Amplify.configure({
         first: $first,
         mydeck: $String!,
         oppdeck: $String!,
-        memo: $String!
+        memo: $String
       }) {
         id
       }
