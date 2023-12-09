@@ -22,6 +22,7 @@ import { generateClient } from "aws-amplify/api";
 import gql from 'graphql-tag';
 import { format } from 'date-fns';
 import { useState, useEffect  } from "react";
+import { GraphQLAPIClass } from '@aws-amplify/api-graphql';
 
 import SendIcon from '@mui/icons-material/Send';
 
@@ -37,24 +38,23 @@ import { Select as BaseSelect, selectClasses } from '@mui/base/Select';
 import { Option as BaseOption, optionClasses } from '@mui/base/Option';
 import { Popper as BasePopper } from '@mui/base/Popper';
 
-//AppSync 連携設定
-Amplify.configure({
-  Auth: {
-    region: process.env.REACT_APP_REGION,
-    userPoolId: process.env.REACT_APP_USERPOOLID,
-    userPoolWebClientId: process.env.REACT_APP_USERPOOLWEBCLIENTID
-  },
-  aws_appsync_graphqlEndpoint: process.env.REACT_APP_APPSYNC,
-  aws_appsync_region: process.env.REACT_APP_REGION,
-  aws_appsync_apiKey: "null"
-})
+
+import awsconfig from './aws-exports';
+import { PubSub } from '@aws-amplify/pubsub';
+import './App.css';
+
+import { listGames } from './graphql/queries';
+import { createGame } from './graphql/mutations';
+import { createGame as createGameMutation, deleteGame as deleteGameMutation } from './graphql/mutations';
+
+
+const GraphQLAPI = new GraphQLAPIClass();
+
 
 const client = generateClient();
 
-const App = () => {
-       
   const initialFormState = { 
-          id: 'pokeca',
+          id: '',
           timestamp: '',
           winner: '',
           first: '',
@@ -62,103 +62,53 @@ const App = () => {
           oppdeck: '',
           memo: '' 
           }
-  
+
+Amplify.configure(awsconfig);
+//PubSub.configure(awsconfig);
+
+const App = () => {
+       
   //state初期化
-  const [message, setMessage] = useState("");
+  const [inputData, setInputData] = useState([]);
   const [gamedata, setGame] = useState(initialFormState);
-  
-  //メッセージ取得クエリー
-  //queryGamedataByid リゾルバを呼び出します。引数として id を渡します。
-  //レスポンスに欲しいアイテムを、items 以下に記述します。
-  const queryGetGame = gql`
-    query queryGamedataByid($id: String!) {
-      queryGamedataByid(id: $id) {
-        items {
-          id
-          timestamp
-          winner
-          first
-          mydeck
-          oppdeck
-          memo
-        }
-      }
-    }
-  `;
-  //対戦データ取得関数
-  //上に定義したクエリーを AWS AppSync に投げます。
-  const getGame = async () => {
-    const res = await client.graphql({
-      query: queryGetGame,
-      variables: {
-        id: gamedata.id
-      },
-    });
-    
-       //レスポンスを res 定数で受け取ると、以下に表現した階層構造でデータを受け取れます。
-    setGame(res.data.queryGamedataByid.items);
-  };
-    
-      //対戦データ登録クエリー
-  //queryPutChat リゾルバを呼び出します。引数として、DynamoDB テーブルの項目を渡します。
-  //ここで重要なのが、id を最後にポツンと定義しているところです。ここは、Subscription と合わせる必要があります。
-  const queryPutGame = gql`
-    mutation putGamedata(
-      $id: String!,
-      $timestamp: String!,
-      $winner: String!,
-      $first: String!,
-      $mydeck: String!,
-      $oppdeck: String!,
-      $memo: String
-    ) {
-      putGamedata(input: {
-        id: $id,
-        timestamp: $timestamp,
-        winner: $winner,
-        first: $first,
-        mydeck: $mydeck!,
-        oppdeck: $oppdeck!,
-        memo: $memo
-      }) {
-        id
-      }
-    }
-  `;
-  
 
-      //対戦データ登録関数
-  //上に定義したクエリーを AWS AppSync に投げます。
-  const putGame = async () => {
-    await client.graphql({
-      query: queryPutGame,
-      variables: { 
-        id: gamedata.id,
-        timestamp: gamedata.timestamp,
-        winner: gamedata.winner,
-        first: gamedata.first,
-        mydeck: gamedata.mydeck,
-        oppdeck: gamedata.oppdeck,
-        memo: gamedata.memo
-      },
-    });
-    //メッセージ入力欄クリア
-    setGame("");
-  };
+  // useEffect(() => {
+  //   fetchNotes();
+  // }, []);
 
+  // async function fetchNotes() {
+  //   const apiData = await client.graphql({ query: listGames });
+  //   setInputData(apiData.data.listGames.items);
+  // }
 
+  async function createGame() {
+    if (!gamedata.mydeck || !gamedata.oppdeck) return;
+    await client.graphql({ query: createGameMutation, variables: { input: gamedata } });
+    setInputData([ ...inputData, gamedata ]);
+    setGame(initialFormState);
+  }
 
-/*
-  //コンポーネント表示時に実行
-  useEffect(() => {
-    //メッセージ取得　画面表示時点のメッセージデータを取得します。
-    getGame();
-    //サブスクリプション実行　これにより、DynamoDB テーブルへのデータ書込のプッシュ通知を受けられる状態にします。
-    subscribePutGame();
-  }, []);
- */
+  // async function componentDidMount() {
+  //   try {
+  //     const posts = await client.graphql({ query : listGames });
+  //     console.log('posts: ', posts)
+  //   } catch (e) {
+  //     console.log(e)
+  //   }
 
+  // client.graphql(graphqlOperation(onCreateGame)).subscribe({
+  //   next: (eventData) => {
+  //     console.log('eventData: ', eventData)
+  //     const post = eventData.value.data.onCreateGame
+  //     const posts = [...this.state.posts.filter(content => {
+  //       return (content.title !== post.title)
+  //     }), post]
+  //     this.setState({ posts })
 
+  //   }
+  // })
+
+  console.log(gamedata);
 
 
   return (
@@ -174,11 +124,13 @@ const App = () => {
         <Box component="form" noValidate sx={{ mt:1 }}>
         
         <FormControl>
-             <FormLabel id="winner">勝敗</FormLabel>
-             onChange={e => setGame({ ...gamedata, 'id': e.target.value})}
+             <FormLabel id="winner">カテゴリ</FormLabel>
+             
               <RadioGroup
+               onChange={(e) => setGame({ ...gamedata, 'id': e.target.value})}
                aria-labelledby="id"
                defaultValue="pokeca"
+               value={gamedata.id}
                name="id"
               >
              <FormControlLabel value="pokeca" control={<Radio />} label="ポケモンカードゲーム" />
@@ -186,13 +138,14 @@ const App = () => {
            </FormControl>
         
         <TextField
-        onChange={e => setGame({ ...gamedata, 'timestamp': e.target.value})}
+        onChange={(e) => setGame({ ...gamedata, 'timestamp': e.target.value})}
         fullWidth
         required
         label="日付"
         type="date"
         id="timestamp"
         name="timestamp"
+        value={gamedata.timestamp}
         InputLabelProps={{
           shrink: true
         }}
@@ -202,10 +155,11 @@ const App = () => {
            <Grid item xs={6}>
             <FormControl>
              <FormLabel id="winner">勝敗</FormLabel>
-             onChange={e => setGame({ ...gamedata, 'winner': e.target.value})}
+             
               <RadioGroup
+               onChange={(e) => setGame({ ...gamedata, 'winner': e.target.value})}
                aria-labelledby="winner"
-               defaultValue="win"
+               value={gamedata.winner}
                name="winner"
               >
              <FormControlLabel value="win" control={<Radio />} label="勝ち" />
@@ -217,10 +171,11 @@ const App = () => {
            <Grid item xs={6}>
            <FormControl>
             <FormLabel id="first">先後</FormLabel>
-            onChange={e => setGame({ ...gamedata, 'first': e.target.value})}
+            
              <RadioGroup
+              onChange={(e) => setGame({ ...gamedata, 'first': e.target.value})}
               aria-labelledby="first"
-              defaultValue="first"
+              value={gamedata.first}
               name="first"
              >
             <FormControlLabel value="first" control={<Radio />} label="先攻" />
@@ -231,35 +186,38 @@ const App = () => {
          </Grid>
 
           <TextField
-            onChange={e => setGame({ ...gamedata, 'mydeck': e.target.value})}
+            onChange={(e) => setGame({ ...gamedata, 'mydeck': e.target.value})}
             margin="normal"
             required
             fullWidth
             label="使用デッキ"
             id="mydeck"
+            value={gamedata.mydeck}
             name="mydeck"
           />
 
           <TextField
-            onChange={e => setGame({ ...gamedata, 'oppdeck': e.target.value})}
+            onChange={(e) => setGame({ ...gamedata, 'oppdeck': e.target.value})}
             margin="normal"
             required
             fullWidth
             label="相手のデッキ"
             id="oppdeck"
+            value={gamedata.oppdeck}
             name="oppdeck"
           />
           
          <TextField
-            onChange={e => setGame({ ...gamedata, 'memo': e.target.value})}
+            onChange={(e) => setGame({ ...gamedata, 'memo': e.target.value})}
             margin="normal"
             fullWidth
             label="メモ"
             id="memo"
+            value={gamedata.memo}
             name="memo"
           />
           <Button
-          onClick={() => putGame()}
+            onClick={createGame}
             type="submit"
             fullWidth
             variant="contained"
@@ -273,21 +231,21 @@ const App = () => {
      <Grid item xs={3} md={6} lg={6}>
      <Typography component="h1" variant="h4">
           対戦履歴
-        </Typography>
-        
+     </Typography>    
         <Grid container spacing={2}>
         {/* Gamedata */}
         <Grid item xs={12} md={6} lg={12}>
-          {gamedata?.map((row) => (
-            <React.Fragment>
+          {
+           inputData.map(Game => (
+            <React.Fragment key={Game.id || Game.timestamp}>
               <Stack direction="row" justifyContent="flex-start" alignItems="flex-start" spacing={1}>
-                //<Typography variant="caption" component="span" color="text.secondary">{format(Date.parse(row.timestamp),"yyyy-MM-dd")}</Typography>
+                <Typography variant="caption" component="span" color="text.secondary">{(Game.timestamp)}</Typography>
               </Stack>
-                  <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.mydeck}</Typography>
-                  <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.oppdeck}</Typography>
-                  <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.first}</Typography>
-                  <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.winner}</Typography>
-                  <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{row.memo}</Typography>
+                  <Typography variant="caption" component="div" sx={{mb:1}} >{Game.mydeck}</Typography>
+                  <Typography variant="caption" component="div" sx={{mb:1}} >{Game.oppdeck}</Typography>
+                  <Typography variant="caption" component="div" sx={{mb:1}} >{Game.first}</Typography>
+                  <Typography variant="caption" component="div" sx={{mb:1}} >{Game.winner}</Typography>
+                  <Typography variant="caption" component="div" sx={{mb:1}} style={{whiteSpace:"pre-line"}}>{Game.memo}</Typography>
               <Divider sx={{my:1}} />
             </React.Fragment>
           ))}

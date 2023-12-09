@@ -1,16 +1,54 @@
-{
-  "version": "2018-05-29",
-  "operation": "PutItem",
-  "key": {
-    "id": $util.dynamodb.toDynamoDBJson($ctx.args.input.id),
-    "timestamp": $util.dynamodb.toDynamoDBJson($ctx.args.input.timestamp)
-  },
-  "attributeValues": $util.dynamodb.toMapValuesJson($ctx.args.input),
-  "condition": {
-    "expression": "attribute_not_exists(#id) AND attribute_not_exists(#timestamp)",
-    "expressionNames": {
-      "#id": "id",
-      "#timestamp": "timestamp",
+/* eslint-disable */
+// this is an auto generated file. This will be overwritten
+
+export const createGame = /* GraphQL */ `
+  mutation Create(
+    $input: CreateGameInput!
+    $condition: ModelGameConditionInput
+  ) {
+    createGame(input: $input, condition: $condition) {
+      id
+      timestamp
+      winner
+      first
+      mydeck
+      createdAt
+      updatedAt
+      __typename
     }
   }
-}
+`;
+export const updateGame = /* GraphQL */ `
+  mutation UpdateGame(
+    $input: UpdateGameInput!
+    $condition: ModelGameConditionInput
+  ) {
+    updateGame(input: $input, condition: $condition) {
+      id
+      timestamp
+      winner
+      first
+      mydeck
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const deleteGame = /* GraphQL */ `
+  mutation DeleteGame(
+    $input: DeleteGameInput!
+    $condition: ModelGameConditionInput
+  ) {
+    deleteGame(input: $input, condition: $condition) {
+      id
+      timestamp
+      winner
+      first
+      mydeck
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;

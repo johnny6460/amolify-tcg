@@ -11,6 +11,9 @@ export const onCreateGame = /* GraphQL */ `
       mydeck
       oppdeck
       memo
+      createdAt
+      updatedAt
+      __typename
     }
   }
 `;
@@ -24,6 +27,9 @@ export const onUpdateGame = /* GraphQL */ `
       mydeck
       oppdeck
       memo
+      createdAt
+      updatedAt
+      __typename
     }
   }
 `;
@@ -37,6 +43,9 @@ export const onDeleteGame = /* GraphQL */ `
       mydeck
       oppdeck
       memo
+      createdAt
+      updatedAt
+      __typename
     }
   }
 `;
